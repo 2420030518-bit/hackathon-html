@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rotten Onions - Movies</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #1a1a1a; background-image: linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 100%); color: #f0e1d1; }
+        ::-webkit-scrollbar { width: 8px; } ::-webkit-scrollbar-track { background: #1a1a1a; } ::-webkit-scrollbar-thumb { background: #4a4a4a; border-radius: 10px; } ::-webkit-scrollbar-thumb:hover { background: #6a6a6a; }
+        #modal-backdrop { transition: opacity 0.3s ease-in-out; } #modal-content { transition: transform 0.3s ease-in-out; }
+        .rating-fresh { color: #22c55e; } .rating-rotten { color: #ef4444; } .rating-mixed { color: #eab308; }
+        .poster-img { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .poster-img:hover { transform: scale(1.05); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.2); }
+        .genre-btn.active, .nav-btn.active { background-color: #c05649; color: white; box-shadow: 0 0 15px rgba(192, 86, 73, 0.5); }
+        .video-container { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; background: #000; }
+        .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+    </style>
+</head>
+<body class="text-gray-200">
+
+    <div class="flex">
+        <!-- Vertical Navigation Bar -->
+        <aside class="fixed top-0 left-0 h-screen w-56 bg-black/30 backdrop-blur-lg flex flex-col items-center py-6 space-y-4 z-50">
+            <div class="mb-4">
+                <img src="C:\Users\rayar\Downloads\ChatGPT Image Jul 31, 2025, 01_31_35 PM.png" alt="Rotten Onions Logo" class="h-24 w-24">
+            </div>
+            <button id="home-btn" class="nav-btn flex items-center w-full py-3 px-6 rounded-lg hover:bg-[#c05649]/50 transition-colors duration-300 active">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                <span class="ml-4 font-semibold text-lg">Home</span>
+            </button>
+            <button id="liked-btn" class="nav-btn flex items-center w-full py-3 px-6 rounded-lg hover:bg-[#c05649]/50 transition-colors duration-300">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.672l1.318-1.354a4.5 4.5 0 116.364 6.364L12 20.364l-7.682-7.682a4.5 4.5 0 010-6.364z" />
+                </svg>
+                <span class="ml-4 font-semibold text-lg">Liked</span>
+            </button>
+            <button id="history-btn" class="nav-btn flex items-center w-full py-3 px-6 rounded-lg hover:bg-[#c05649]/50 transition-colors duration-300">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span class="ml-4 font-semibold text-lg">History</span>
+            </button>
+        </aside>
+
+        <!-- Main Content -->
+        <div id="main-content" class="w-full transition-all duration-300 ml-56">
+            <header class="bg-black/30 backdrop-blur-sm sticky top-0 z-40 shadow-lg p-4">
+                <div class="flex items-center justify-center mb-4">
+                    <h1 class="text-5xl font-extrabold text-white whitespace-nowrap text-[#f0e1d1]">Rotten Onions</h1>
+                </div>
+                <div class="flex justify-center">
+                    <div class="relative w-full max-w-lg">
+                        <form id="search-form" onsubmit="return false;">
+                            <input type="text" id="search-input" placeholder="Search for a movie or series..." class="w-full bg-gray-800/50 text-white placeholder-gray-400 border-2 border-gray-700 rounded-full py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-[#c05649] focus:border-transparent transition duration-300">
+                            <svg class="absolute left-4 top-1/2 -translate-y-1/2 h-6 w-6 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </form>
+                        <div id="search-results" class="absolute mt-2 w-full bg-gray-800 rounded-lg shadow-lg z-10 hidden overflow-hidden"></div>
+                    </div>
+                </div>
+            </header>
+
+            <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <div id="genre-container" class="mb-8 flex flex-wrap gap-3 justify-center"></div>
+                <h2 id="main-title" class="text-3xl font-bold mb-6 text-white text-[#f0e1d1]">Popular Movies</h2>
+                <div id="movies-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-6 gap-y-8"></div>
+                <div id="loader" class="text-center py-8 hidden">
+                     <div class="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto" style="border-color: #c05649;"></div>
+                     <p class="mt-2">Loading...</p>
+                </div>
+                <p id="error-message" class="text-center text-xl text-gray-400 hidden"></p>
+            </main>
+            <footer class="text-center py-4">
+                <p class="text-xs text-gray-600">Rotten Onions v2.1</p>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Movie Details Modal -->
+    <div id="modal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
+        <div id="modal-backdrop" class="absolute inset-0 bg-black bg-opacity-75"></div>
+        <div id="modal-content" class="relative bg-[#2a2a2a] rounded-lg shadow-xl w-11/12 max-w-5xl max-h-[90vh] overflow-y-auto transform scale-95">
+            <button id="modal-close" class="absolute top-3 right-3 text-gray-400 hover:text-white z-20"><svg class="h-8 w-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg></button>
+            <div id="modal-body" class="p-0"></div>
+        </div>
+    </div>
+    
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-[#c05649] text-white py-3 px-5 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-500 z-50">
+        <p id="toast-message"></p>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- CONFIGURATION ---
+            const API_KEY = 'd63d4bcc8e67ae62c917bb48aba3ec58'; 
+            const API_BASE_URL = 'https://api.themoviedb.org/3';
+            const IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/w500';
+            const PLACEHOLDER_IMAGE = 'https://placehold.co/500x750/1f2937/6b7280?text=No+Image';
+
+            // --- DOM ELEMENTS ---
+            const searchInput = document.getElementById('search-input');
+            const searchResults = document.getElementById('search-results');
+            const moviesGrid = document.getElementById('movies-grid');
+            const mainTitle = document.getElementById('main-title');
+            const loader = document.getElementById('loader');
+            const errorMessage = document.getElementById('error-message');
+            const genreContainer = document.getElementById('genre-container');
+            const modal = document.getElementById('modal');
+            const modalBackdrop = document.getElementById('modal-backdrop');
+            const modalContent = document.getElementById('modal-content');
+            const modalBody = document.getElementById('modal-body');
+            const modalClose = document.getElementById('modal-close');
+            const homeBtn = document.getElementById('home-btn');
+            const likedBtn = document.getElementById('liked-btn');
+            const historyBtn = document.getElementById('history-btn');
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toast-message');
+            
+            let searchTimeout;
+
+            // --- LOCAL STORAGE HELPERS ---
+            const getFromStorage = (key) => JSON.parse(localStorage.getItem(key)) || [];
+            const saveToStorage = (key, data) => localStorage.setItem(key, JSON.stringify(data));
+
+            // --- API FUNCTIONS ---
+            async function fetchFromAPI(endpoint, params = '') {
+                showLoader();
+                try {
+                    const response = await fetch(`${API_BASE_URL}${endpoint}?api_key=${API_KEY}&language=en-US${params}`);
+                    if (!response.ok) throw new Error(`API Error: ${response.statusText}`);
+                    return await response.json();
+                } catch (error) {
+                    console.error('Failed to fetch from API:', error);
+                    showError('Failed to fetch data. Please check your connection or API key.');
+                    return null;
+                } finally {
+                    hideLoader();
+                }
+            }
+
+            // --- DISPLAY FUNCTIONS ---
+            function displayItems(items, title = "Popular Movies") {
+                mainTitle.textContent = title;
+                moviesGrid.innerHTML = '';
+                errorMessage.classList.add('hidden');
+                genreContainer.classList.toggle('hidden', title !== 'Popular Movies');
+
+
+                if (!items || items.length === 0) {
+                    showError('No items found.');
+                    return;
+                }
+
+                items.forEach(item => {
+                    if (!item.poster_path) return;
+                    const posterPath = `${IMAGE_BASE_URL}${item.poster_path}`;
+                    const itemEl = document.createElement('div');
+                    itemEl.classList.add('item-card', 'cursor-pointer', 'group');
+                    
+                    const titleText = item.title || item.name;
+                    const year = (item.release_date || item.first_air_date) ? new Date(item.release_date || item.first_air_date).getFullYear() : 'N/A';
+
+                    itemEl.innerHTML = `
+                        <div class="rounded-lg overflow-hidden shadow-lg">
+                            <img src="${posterPath}" alt="${titleText}" class="poster-img w-full h-auto transition-transform duration-300" onerror="this.onerror=null;this.src='${PLACEHOLDER_IMAGE}';">
+                        </div>
+                        <div class="mt-2 text-center px-1">
+                            <h3 class="text-sm font-semibold text-white truncate" title="${titleText}">${titleText}</h3>
+                            <p class="text-xs text-gray-400">${year}</p>
+                        </div>
+                    `;
+                    const mediaType = item.media_type || (item.title ? 'movie' : 'tv');
+                    itemEl.addEventListener('click', () => showItemDetails(item.id, mediaType));
+                    moviesGrid.appendChild(itemEl);
+                });
+            }
+
+            async function showItemDetails(id, type) {
+                const [details, videosData, recommendationsData] = await Promise.all([
+                    fetchFromAPI(`/${type}/${id}`),
+                    fetchFromAPI(`/${type}/${id}/videos`),
+                    fetchFromAPI(`/${type}/${id}/recommendations`)
+                ]);
+
+                if (!details) return;
+
+                addToHistory(details);
+
+                const trailer = videosData.results.find(v => v.type === 'Trailer' && v.site === 'YouTube');
+                const title = details.title || details.name;
+                const year = new Date(details.release_date || details.first_air_date).getFullYear() || 'N/A';
+                const rating = details.vote_average ? details.vote_average.toFixed(1) : 'N/A';
+                let ratingClass = rating >= 7 ? 'rating-fresh' : rating < 5 ? 'rating-rotten' : 'rating-mixed';
+
+                const isLiked = getFromStorage('liked').some(item => item.id === details.id);
+                
+                modalBody.innerHTML = `
+                    ${trailer ? `<div class="video-container rounded-t-lg"><iframe src="https://www.youtube.com/embed/${trailer.key}?autoplay=1&mute=1&controls=0&showinfo=0&rel=0&iv_load_policy=3&modestbranding=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe></div>` : `<img src="${details.backdrop_path ? `https://image.tmdb.org/t/p/w1280${details.backdrop_path}` : ''}" alt="${title} backdrop" class="w-full h-48 md:h-72 object-cover rounded-t-lg" onerror="this.style.display='none'">`}
+                    <div class="p-6 md:p-8">
+                        <div class="flex justify-between items-start">
+                             <h2 class="text-3xl font-bold text-white">${title} (${year})</h2>
+                             <button id="like-btn" class="text-3xl transition-transform duration-200 hover:scale-125">${isLiked ? '❤️' : '🤍'}</button>
+                        </div>
+                        <p class="text-gray-400 text-sm mt-1">${details.genres.map(g => g.name).join(', ')}</p>
+                        <div class="flex items-center gap-4 mt-4">
+                            <div class="flex items-center gap-2"><span class="text-3xl font-bold ${ratingClass}">${rating}</span><span class="text-gray-400">/ 10</span></div>
+                            <p class="text-gray-400">(${details.vote_count} votes)</p>
+                        </div>
+                        <div class="mt-6"><h3 class="text-xl font-semibold text-white mb-2">Overview</h3><p class="text-gray-300 leading-relaxed">${details.overview || 'No overview available.'}</p></div>
+                        <div id="recommendations" class="mt-8"><h3 class="text-xl font-semibold text-white mb-4">You Might Also Like</h3><div id="recommendations-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4"></div></div>
+                    </div>`;
+                
+                document.getElementById('like-btn').addEventListener('click', () => toggleLike(details));
+
+                const recommendationsGrid = document.getElementById('recommendations-grid');
+                if (recommendationsData && recommendationsData.results.length > 0) {
+                    recommendationsData.results.slice(0, 8).forEach(rec => {
+                        if (!rec.poster_path) return;
+                        const recEl = document.createElement('div');
+                        recEl.classList.add('recommendation-card', 'cursor-pointer', 'group');
+                        recEl.innerHTML = `<img src="${IMAGE_BASE_URL}${rec.poster_path}" alt="${rec.title || rec.name}" class="rounded-lg poster-img w-full h-auto" onerror="this.onerror=null;this.src='${PLACEHOLDER_IMAGE}';">`;
+                        recEl.addEventListener('click', () => {
+                            closeModal();
+                            setTimeout(() => showItemDetails(rec.id, rec.media_type || type), 300);
+                        });
+                        recommendationsGrid.appendChild(recEl);
+                    });
+                } else {
+                    recommendationsGrid.innerHTML = `<p class="text-gray-400 col-span-full">No recommendations found.</p>`;
+                }
+
+                openModal();
+            }
+
+            function loadGenres() {
+                fetchFromAPI('/genre/movie/list').then(data => {
+                    if (!data || !data.genres) return;
+                    genreContainer.innerHTML = '';
+                    data.genres.forEach(genre => {
+                        const btn = document.createElement('button');
+                        btn.classList.add('genre-btn', 'px-4', 'py-2', 'text-sm', 'font-semibold', 'rounded-full', 'bg-gray-800/60', 'hover:bg-[#c05649]', 'transition', 'duration-300');
+                        btn.textContent = genre.name;
+                        btn.dataset.genreId = genre.id;
+                        btn.addEventListener('click', (e) => {
+                            setActiveNav(null);
+                            document.querySelectorAll('.genre-btn').forEach(b => b.classList.remove('active'));
+                            e.target.classList.add('active');
+                            fetchFromAPI(`/discover/movie`, `&with_genres=${genre.id}`).then(movieData => {
+                                if (movieData) displayItems(movieData.results, `${genre.name} Movies`);
+                            });
+                        });
+                        genreContainer.appendChild(btn);
+                    });
+                });
+            }
+
+            // --- LIVE SEARCH ---
+            function displaySearchResults(results) {
+                searchResults.innerHTML = '';
+                if (results.length === 0) {
+                    searchResults.classList.add('hidden');
+                    return;
+                }
+                
+                results.slice(0, 7).forEach(item => {
+                    if (!item.poster_path) return;
+                    const resultEl = document.createElement('div');
+                    resultEl.classList.add('p-2', 'hover:bg-gray-700', 'cursor-pointer', 'flex', 'items-center', 'gap-4');
+                    resultEl.innerHTML = `
+                        <img src="${IMAGE_BASE_URL}${item.poster_path}" class="w-10 h-14 object-cover rounded-md">
+                        <span class="text-white">${item.title || item.name}</span>
+                    `;
+                    resultEl.addEventListener('click', () => {
+                        showItemDetails(item.id, item.media_type);
+                        searchResults.classList.add('hidden');
+                        searchInput.value = '';
+                    });
+                    searchResults.appendChild(resultEl);
+                });
+                searchResults.classList.remove('hidden');
+            }
+
+            // --- NAVIGATION AND VIEW FUNCTIONS ---
+            function setActiveNav(activeBtn) {
+                 document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+                 if (activeBtn) activeBtn.classList.add('active');
+            }
+            
+            function showLikedMovies() {
+                const liked = getFromStorage('liked');
+                displayItems(liked, 'Liked Movies & TV Shows');
+                setActiveNav(likedBtn);
+            }
+
+            function showHistoryMovies() {
+                const history = getFromStorage('history');
+                displayItems(history, 'Viewing History');
+                setActiveNav(historyBtn);
+            }
+
+            function showHome() {
+                fetchFromAPI('/movie/popular').then(data => data && displayItems(data.results));
+                setActiveNav(homeBtn);
+            }
+
+            // --- LOCAL STORAGE FUNCTIONS ---
+            function addToHistory(itemDetails) {
+                let history = getFromStorage('history');
+                history = history.filter(item => item.id !== itemDetails.id);
+                history.unshift(itemDetails);
+                saveToStorage('history', history.slice(0, 20));
+            }
+
+            function toggleLike(itemDetails) {
+                let liked = getFromStorage('liked');
+                const itemIndex = liked.findIndex(item => item.id === itemDetails.id);
+                const likeBtn = document.getElementById('like-btn');
+                if (itemIndex > -1) {
+                    liked.splice(itemIndex, 1);
+                    if(likeBtn) likeBtn.textContent = '🤍';
+                    showToast(`Removed "${itemDetails.title || itemDetails.name}" from Liked`);
+                } else {
+                    liked.unshift(itemDetails);
+                    if(likeBtn) likeBtn.textContent = '❤️';
+                    showToast(`Added "${itemDetails.title || itemDetails.name}" to Liked!`);
+                }
+                saveToStorage('liked', liked);
+            }
+
+            // --- UI UTILITY FUNCTIONS ---
+            const showLoader = () => loader.classList.remove('hidden');
+            const hideLoader = () => loader.classList.add('hidden');
+            function showError(message) {
+                moviesGrid.innerHTML = '';
+                errorMessage.textContent = message;
+                errorMessage.classList.remove('hidden');
+            }
+            function openModal() {
+                modal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+                modalBackdrop.classList.remove('opacity-0');
+                modalContent.classList.remove('scale-95');
+                modalContent.scrollTop = 0;
+            }
+            function closeModal() {
+                document.body.style.overflow = 'auto';
+                modalBackdrop.classList.add('opacity-0');
+                modalContent.classList.add('scale-95');
+                const iframe = modalBody.querySelector('iframe');
+                if (iframe) iframe.src = iframe.src;
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                    modalBody.innerHTML = '';
+                }, 300);
+            }
+            
+            function showToast(message) {
+                toastMessage.textContent = message;
+                toast.classList.remove('translate-y-20', 'opacity-0');
+                setTimeout(() => {
+                    toast.classList.add('translate-y-20', 'opacity-0');
+                }, 3000); // Hide after 3 seconds
+            }
+
+            // --- EVENT LISTENERS ---
+            searchInput.addEventListener('input', () => {
+                clearTimeout(searchTimeout);
+                const searchTerm = searchInput.value.trim();
+                if (searchTerm.length > 0) {
+                    searchTimeout = setTimeout(async () => {
+                        const data = await fetchFromAPI(`/search/multi`, `&query=${encodeURIComponent(searchTerm)}`);
+                        if (data) {
+                            const mediaResults = data.results.filter(item => item.media_type === 'movie' || item.media_type === 'tv');
+                            displaySearchResults(mediaResults);
+                        }
+                    }, 300);
+                } else {
+                    searchResults.classList.add('hidden');
+                }
+            });
+            
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.relative')) {
+                    searchResults.classList.add('hidden');
+                }
+            });
+            
+            homeBtn.addEventListener('click', showHome);
+            likedBtn.addEventListener('click', showLikedMovies);
+            historyBtn.addEventListener('click', showHistoryMovies);
+
+            modalClose.addEventListener('click', closeModal);
+            modalBackdrop.addEventListener('click', closeModal);
+            document.addEventListener('keydown', (e) => e.key === 'Escape' && !modal.classList.contains('hidden') && closeModal());
+
+            // --- INITIALIZATION ---
+            function init() {
+                showHome();
+                loadGenres();
+            }
+            
+            init();
+        });
+    </script>
+</body>
+</html>
